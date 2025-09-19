@@ -22,6 +22,7 @@
       -moz-appearance: textfield;
     }
 
+
     /* Custom toggle styles */
     .toggle-track {
       width: 44px;
@@ -32,6 +33,7 @@
       cursor: pointer;
       transition: background-color 0.3s;
     }
+
 
     .toggle-thumb {
       width: 20px;
@@ -45,13 +47,16 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
 
+
     input:checked + .toggle-track {
       background-color: #4f46e5;
     }
 
+
     input:checked + .toggle-track .toggle-thumb {
       transform: translateX(20px);
     }
+
 
     /* Dark mode styles */
     body.dark {
@@ -110,6 +115,7 @@
       color: #4ade80;
     }
 
+
     /* Dark mode toggle container */
     .mode-toggle-container {
       display: flex;
@@ -128,6 +134,16 @@
     body.dark .mode-toggle-label {
       color: #a5b4fc; /* indigo-300 */
     }
+
+
+    /* Delete button style */
+    .delete-duration-btn {
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0 6px;
+      user-select: none;
+      transition: color 0.3s ease;
+    }
   </style>
 </head>
 <body class="py-10 bg-gradient-to-br from-indigo-100 via-blue-50 to-violet-200 min-h-screen flex items-center justify-center transition-colors duration-300">
@@ -142,11 +158,13 @@
       </label>
     </div>
 
+
     <h1 class="text-2xl font-bold text-center text-gray-800 mb-8 tracking-tight">Work Payment Calculator</h1>
     <div class="mb-6">
       <label class="block text-gray-700 mb-2" for="amount">Amount per hour</label>
       <input type="number" id="amount" class="remove-arrow w-full p-3 border-2 border-blue-100 focus:border-blue-400 rounded-lg bg-gray-50 focus:bg-white transition" placeholder="Enter hourly rate" min="0"/>
     </div>
+
 
     <div class="flex items-center mb-4">
       <span class="text-sm text-gray-600 mr-2">Duration in</span>
@@ -159,6 +177,7 @@
       </label>
       <span id="toggleLabel" class="ml-3 text-sm font-medium text-indigo-600">Minutes</span>
     </div>
+
 
     <div id="durations" class="mb-4">
       <label class="block text-gray-700 mb-2">Values</label>
@@ -176,9 +195,11 @@
     <div id="duration" class=" text-center  text-indigo-600 font-medium"></div>
   </div>
 
+
   <script>
     // Toggle between minutes and hours
     let isHour = false;
+
 
     const amountInput = document.getElementById('amount');
     const toggleInputType = document.getElementById('toggleInputType');
@@ -189,9 +210,11 @@
     const resultDiv = document.getElementById('result');
     const durationDiv = document.getElementById('duration');
 
+
     // Dark mode elements
     const darkModeToggle = document.getElementById('darkModeToggle');
     const modeLabel = document.getElementById('modeLabel');
+
 
     // LocalStorage keys
     const LS_KEYS = {
@@ -200,6 +223,7 @@
       isHour: 'workCalcIsHour',
       darkMode: 'workCalcDarkMode'
     };
+
 
     // Change input type (minutes/hours)
     function changeInputType(save=true) {
@@ -214,12 +238,19 @@
       }
     }
 
-    // Add new duration input field
+
+    // Add new duration input field with delete button
     function addDurationField(value = '') {
       const wrapper = document.createElement('div');
-      wrapper.className = 'flex gap-2 mb-2';
-      wrapper.innerHTML = `<input type="number" class="remove-arrow duration-field w-full p-3 border-2 border-blue-100 focus:border-blue-400 rounded-lg bg-gray-50 focus:bg-white transition" placeholder="${isHour ? "Enter hours" : "Enter minutes"}" min="0" value="${value}"/>`;
+      wrapper.className = 'flex gap-2 mb-2 items-center';
+      wrapper.innerHTML = `
+        <input type="number" class="remove-arrow duration-field w-full p-3 border-2 border-blue-100 focus:border-blue-400 rounded-lg bg-gray-50 focus:bg-white transition" placeholder="${isHour ? "Enter hours" : "Enter minutes"}" min="0" value="${value}"/>
+        <button type="button" aria-label="Remove duration" class="delete-duration-btn text-red-500 hover:text-red-700 focus:outline-none" title="Delete this duration">
+          &#x2716;
+        </button>
+      `;
       durationsContainer.appendChild(wrapper);
+
       if(document.body.classList.contains('dark')) {
         const inputs = wrapper.querySelectorAll('input');
         inputs.forEach(input => {
@@ -227,8 +258,17 @@
           input.classList.add('bg-[#334155]', 'border-[#475569]', 'focus:bg-[#334155]', 'focus:border-indigo-500', 'text-[#cbd5e1]');
         });
       }
-      attachDurationInputListener(wrapper.querySelector('input'));
+
+      const input = wrapper.querySelector('input');
+      attachDurationInputListener(input);
+
+      const deleteBtn = wrapper.querySelector('.delete-duration-btn');
+      deleteBtn.addEventListener('click', () => {
+        wrapper.remove();
+        saveToLocalStorage();
+      });
     }
+
 
     // Calculate the payment and show results
     function calculatePayment() {
@@ -252,6 +292,7 @@
         : `Total duration: ${total} minutes (${(totalMinutes/60).toFixed(2)} hours)`;
     }
 
+
     // Dark mode toggle logic
     function setDarkMode(isDark, save=true) {
       if (isDark) {
@@ -270,6 +311,7 @@
       }
     }
 
+
     // Update input styles based on theme
     function updateInputStyles(isDark) {
       const inputs = document.querySelectorAll('input[type="number"]');
@@ -283,6 +325,7 @@
         }
       });
 
+
       const labelsGray700 = document.querySelectorAll('.text-gray-700');
       labelsGray700.forEach(label => {
         if (isDark) {
@@ -295,6 +338,7 @@
       });
     }
 
+
     // Save all inputs and state to localStorage
     function saveToLocalStorage() {
       localStorage.setItem(LS_KEYS.amount, amountInput.value);
@@ -306,17 +350,20 @@
       localStorage.setItem(LS_KEYS.durations, JSON.stringify(durationsData));
     }
 
+
     // Load all inputs and state from localStorage
     function loadFromLocalStorage() {
       // Load dark mode first
       const darkPref = localStorage.getItem(LS_KEYS.darkMode);
       setDarkMode(darkPref === 'true', false);
 
+
       // Load amount
       const savedAmount = localStorage.getItem(LS_KEYS.amount);
       if(savedAmount !== null){
         amountInput.value = savedAmount;
       }
+
 
       // Load isHour
       const savedIsHour = localStorage.getItem(LS_KEYS.isHour);
@@ -325,6 +372,7 @@
         toggleInputType.checked = boolHour;
         changeInputType(false);
       }
+
 
       // Load durations
       const savedDurations = localStorage.getItem(LS_KEYS.durations);
@@ -339,12 +387,14 @@
       }
     }
 
+
     // Attach input event listener to each duration input to save data on change
     function attachDurationInputListener(input) {
       input.addEventListener('input', () => {
         saveToLocalStorage();
       });
     }
+
 
     // Attach listeners
     amountInput.addEventListener('input', saveToLocalStorage);
@@ -355,6 +405,7 @@
       saveToLocalStorage();
     });
     calcBtn.addEventListener('click', calculatePayment);
+
 
     // Initial setup on DOM load
     window.addEventListener('DOMContentLoaded', () => {
